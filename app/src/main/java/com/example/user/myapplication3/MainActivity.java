@@ -17,7 +17,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     final String LOG_TAG = "myLogs";
 
     Button btnAdd, btnRead, btnClear;
-    EditText etName, etEmail;
+    EditText etName, etPhone, etPassword;
 
     DBHelper dbHelper;
 
@@ -37,7 +37,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         btnClear.setOnClickListener(this);
 
         etName = (EditText) findViewById(R.id.etName);
-        etEmail = (EditText) findViewById(R.id.etEmail);
+        etPhone = (EditText) findViewById(R.id.etEmail);
+        etPassword = (EditText) findViewById(R.id.etPassword);
 
         // создаем объект для создания и управления версиями БД
         dbHelper = new DBHelper(this);
@@ -52,7 +53,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // получаем данные из полей ввода
         String name = etName.getText().toString();
-        String email = etEmail.getText().toString();
+        String phone = etPhone.getText().toString();
+        String password = etPassword.getText().toString();
 
         // подключаемся к БД
         SQLiteDatabase db = dbHelper.getWritableDatabase();
@@ -64,15 +66,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 // подготовим данные для вставки в виде пар: наименование столбца - значение
 
                 cv.put("name", name);
-                cv.put("email", email);
+                cv.put("password", password);
+                cv.put("phone", phone);
                 // вставляем запись и получаем ее ID
-                long rowID = db.insert("mytable", null, cv);
+                long rowID = db.insert("user", null, cv);
                 Log.d(LOG_TAG, "row inserted, ID = " + rowID);
                 break;
             case R.id.btnRead:
                 Log.d(LOG_TAG, "--- Rows in mytable: ---");
                 // делаем запрос всех данных из таблицы mytable, получаем Cursor
-                Cursor c = db.query("mytable", null, null, null, null, null, null);
+                Cursor c = db.query("user", null, null, null, null, null, null);
 
                 // ставим позицию курсора на первую строку выборки
                 // если в выборке нет строк, вернется false
@@ -81,14 +84,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     // определяем номера столбцов по имени в выборке
                     int idColIndex = c.getColumnIndex("id");
                     int nameColIndex = c.getColumnIndex("name");
-                    int emailColIndex = c.getColumnIndex("email");
+                    int phoneColIndex = c.getColumnIndex("phone");
 
                     do {
                         // получаем значения по номерам столбцов и пишем все в лог
                         Log.d(LOG_TAG,
-                                "ID = " + c.getInt(idColIndex) +
+                                "id = " + c.getInt(idColIndex) +
                                         ", name = " + c.getString(nameColIndex) +
-                                        ", email = " + c.getString(emailColIndex));
+                                        ", phone = " + c.getString(phoneColIndex));
                         // переход на следующую строку
                         // а если следующей нет (текущая - последняя), то false - выходим из цикла
                     } while (c.moveToNext());
@@ -99,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.btnClear:
                 Log.d(LOG_TAG, "--- Clear mytable: ---");
                 // удаляем все записи
-                int clearCount = db.delete("mytable", null, null);
+                int clearCount = db.delete("user", null, null);
                 Log.d(LOG_TAG, "deleted rows count = " + clearCount);
                 break;
         }
@@ -119,11 +122,27 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void onCreate(SQLiteDatabase db) {
             Log.d(LOG_TAG, "--- onCreate database ---");
-            // создаем таблицу с полями
-            db.execSQL("create table mytable ("
-                    + "id integer primary key autoincrement,"
-                    + "name text,"
-                    + "email text" + ");");
+            db.execSQL("CREATE TABLE user (\n" +
+                    "  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  password TEXT NOT NULL,\n" +
+                    "  name TEXT NULL,\n" +
+                    "  phone TEXT NULL\n" +
+                    "  );");
+            db.execSQL("CREATE TABLE dog (\n" +
+                    "  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,\n" +
+                    "  birthday TEXT NULL,\n" +
+                    "  sex INTEGER NULL,\n" +
+                    "  color TEXT NULL,\n" +
+                    "  wool TEXT NULL,\n" +
+                    "  price_category TEXT NULL,\n" +
+                    "  status TEXT NULL,\n" +
+                    "  user_id INTEGER NOT NULL,\n" +
+                    "  CONSTRAINT fk_dog_user\n" +
+                    "    FOREIGN KEY (user_id)\n" +
+                    "    REFERENCES user (id)\n" +
+                    "    ON DELETE NO ACTION\n" +
+                    "    ON UPDATE NO ACTION)\n" +
+                    ";\n");
         }
 
         @Override
