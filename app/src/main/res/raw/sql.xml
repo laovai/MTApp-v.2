@@ -1,0 +1,31 @@
+<sql>
+    <statement>
+CREATE TABLE user (
+    id INT NOT NULL,
+    password VARCHAR(45) NOT NULL,
+    firstname VARCHAR(45) NULL,
+    lastname VARCHAR(45) NULL,
+    phone VARCHAR(45) NULL,
+    PRIMARY KEY (id)
+);
+
+CREATE TABLE dog (
+    id INT NOT NULL,
+    birthday DATE NULL,
+    sex INT NULL,
+    color VARCHAR(45) NULL,
+    wool VARCHAR(45) NULL,
+    price_category VARCHAR(45) NULL,
+    photo BLOB NULL,
+    status VARCHAR(45) NULL,
+    user_id INT NOT NULL,
+    PRIMARY KEY (id)
+    ,
+    CONSTRAINT fk_dog_user
+    FOREIGN KEY (user_id)
+    REFERENCES user (id)
+    ON DELETE NO ACTION
+    ON UPDATE NO ACTION
+);
+    </statement>
+</sql>
